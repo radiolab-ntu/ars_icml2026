@@ -210,7 +210,7 @@ If you find this repository useful, please consider citing:
 ```bibtex
 @inproceedings{zhang2026harnessing,
   title={Harnessing Reasoning Trajectories for Hallucination Detection via Answer-agreement Representation Shaping},
-  author={Zhang, Jianxiong and Guo, Bing and Jiang, Yuming and Wang, Haobo and An, Bo and Du, Xuefeng},
+  author={Jianxiong Zhang, Bing Guo, Yuming Jiang, Haobo Wang, Bo An, and Xuefeng Du},
   booktitle={International Conference on Machine Learning},
   year={2026}
 }
