@@ -9,10 +9,12 @@ This repository contains the official implementation of our **ICML 2026** paper:
 
 This codebase supports:
 - Generating multiple LLM responses and extracting reasoning traces (CoT)
-- Evaluating generations via **LLM-as-a-Judge**
-- Extracting hidden-state embeddings from all layers
+- Evaluating generations via **LLM-as-a-Judge** (Qwen3-32B)
+- Generating noisy answer variants
+- Judging answer agreement via **LLM-as-a-Judge** (semantic equivalence)
+- Constructing ARS training data using answer-consistency supervision
 - Training the proposed **Answer-agreement Representation Shaping (ARS)** module
-- Evaluating hallucination detection performance using multiple embedding-based detectors
+- Evaluating hallucination detection using multiple embedding-based detectors
 
 ---
 
@@ -78,8 +80,60 @@ The output JSON file will be saved under:
 ```
 
 ---
+# Step 2: Generate Noisy Variants + Judge Answer Agreement
 
-## Step 2: Feature Extraction (Embedding Extraction)
+We provide a script that generates multiple noisy variants for each sample by injecting noise into the **last token hidden state** during generation.
+Then it optionally runs an LLM-based semantic judge to determine whether the variant answer is **semantically equivalent** to the original answer.
+
+## 2.1 Generate Noisy Variants
+
+```bash
+python generate_variants_and_judge.py \
+    --input_path ./outputs/generations/exp1_truthfulqa.json \
+    --model_name Qwen/Qwen3-8B \
+    --num_variants 4 \
+    --noise_scale 0.05 \
+    --max_new_tokens 512 \
+    --seed 42
+```
+
+This will output:
+
+```text
+./outputs/generations/exp1_truthfulqa_noisy.json
+```
+
+---
+
+## 2.2 Run LLM-as-a-Judge for Semantic Consistency
+
+To judge whether each variant answer is semantically equivalent to the original answer:
+
+```bash
+python generate_variants_and_judge.py \
+    --input_path ./outputs/generations/exp1_truthfulqa.json \
+    --model_name Qwen/Qwen3-8B \
+    --num_variants 4 \
+    --noise_scale 0.05 \
+    --max_new_tokens 512 \
+    --seed 42 \
+    --run_judge \
+    --judge_model Qwen/Qwen3-8B
+```
+
+The judged output will be saved under:
+
+```text
+./result/Qwen_Qwen3-8B_exp1_truthfulqa_noisy.json
+```
+
+
+These agreement labels form the key supervision signal for ARS training.
+
+
+---
+
+## Step 3: Feature Extraction (Embedding Extraction)
 
 This script extracts hidden-state embeddings from **all layers** of a pre-trained LLM.
 It processes both the generated answers and reasoning traces.
@@ -97,7 +151,7 @@ python ./extracting/extract_embeddings.py \
 
 ---
 
-## Step 3: Extract Ground-truth Labels from Judge Responses
+## Step 4: Extract Ground-truth Labels from Judge Responses
 
 To extract the final grade (labels) from the judge outputs:
 
@@ -109,7 +163,7 @@ python ./extracting/extract_answer/extract_label.py \
 
 ---
 
-## Step 4: ARS Training
+## Step 5: ARS Training
 
 Train ARS using the extracted embeddings:
 
@@ -125,7 +179,7 @@ python ./train_ars/ars_train.py train \
 
 ---
 
-## Step 5: Extract Projected Features (Clean Subset)
+## Step 6: Extract Projected Features (Clean Subset)
 
 After ARS training, extract the projected features of original samples (excluding variants):
 
@@ -139,7 +193,7 @@ python ./train_ars/ars_train.py extract \
 
 ---
 
-# Hallucination Detection Benchmarks
+# Hallucination Detection
 
 We evaluate hallucination detection performance using several embedding-based detectors.
 
