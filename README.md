@@ -88,7 +88,7 @@ Then it optionally runs an LLM-based semantic judge to determine whether the var
 ## 2.1 Generate Noisy Variants
 
 ```bash
-python generate_variants_and_judge.py \
+python ./variant_generation_and_judge/generate_variants_and_judge.py \
     --input_path ./outputs/generations/exp1_truthfulqa.json \
     --model_name Qwen/Qwen3-8B \
     --num_variants 4 \
@@ -110,7 +110,7 @@ This will output:
 To judge whether each variant answer is semantically equivalent to the original answer:
 
 ```bash
-python generate_variants_and_judge.py \
+python ./variant_generation_and_judge/generate_variants_and_judge.py \
     --input_path ./outputs/generations/exp1_truthfulqa.json \
     --model_name Qwen/Qwen3-8B \
     --num_variants 4 \
